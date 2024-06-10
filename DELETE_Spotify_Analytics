@@ -1,0 +1,85 @@
+-- In this project, I will use a dataset containing Spotify data. 
+-- First, I will create the table. 
+
+CREATE TABLE BIT_DB.Spotifydata (
+id integer PRIMARY KEY,
+artist_name varchar NOT NULL,
+track_name varchar NOT NULL,
+track_id varchar NOT NULL,
+popularity integer NOT NULL,
+danceability decimal(4,3) NOT NULL,
+energy decimal(4,3) NOT NULL,
+song_key integer NOT NULL,
+loudness decimal(5,3) NOT NULL,
+song_mode integer NOT NULL,
+speechiness decimal(5,4) NOT NULL,
+acousticness decimal(6,5) NOT NULL,
+instrumentalness decimal(10,9) NOT NULL,
+liveness decimal(5,4) NOT NULL,
+valence decimal(4,3) NOT NULL,
+tempo decimal(6,3) NOT NULL,
+duration_ms integer NOT NULL,
+time_signature integer NOT NULL )
+;
+
+SELECT * FROM BIT_DB.Spotifydata
+;
+
+-- Top 10 most danceable artists. 
+
+SELECT artist_name, AVG(danceability)
+FROM SpotifyData
+GROUP BY artist_name
+ORDER BY AVG(danceability) DESC
+LIMIT 10
+;
+
+-- Who are the top 10 artists based on popularity? 
+
+SELECT DISTINCT artist_name, popularity, id
+FROM SpotifyData
+ORDER BY popularity DESC
+LIMIT 10
+;
+
+-- +++++ Why is Olivia Rodrigo appearing twice on this list?? 
+-- +++++ I thought it could be a typo or extra characters in the CSV data, 
+-- +++++ so first I added the ~id~ column to my query to identify which rows were appearing in the results.
+-- +++++ Next I opened the file in Excel and used copy/paste to be certain 
+-- +++++ every duplicate artist name would match exactly.
+-- +++++ Dropped the table, Created the table, Imported the CSV data, Same result.  
+-- +++++ Olivia Rodrigo (id 4, 1) appear in the Top 10 Artists by Popularity at #1 and #9.
+
+-- What artist released the longest song? 
+
+SELECT artist_name, track_name
+FROM SpotifyData
+ORDER BY duration_ms DESC
+LIMIT 1
+;
+
+-- What's the average danceability for the 10 most popular songs?
+SELECT AVG(danceability) AS Top10Songs_AvgDanceability
+FROM (
+    SELECT DISTINCT artist_name, popularity, danceability
+    FROM SpotifyData
+    ORDER BY popularity DESC
+    LIMIT 10)
+;
+
+-- Calculate the average popularity for the artists in the Spotify data table. 
+-- Then, for every artist with an average popularity of 90 or above, show their name, 
+-- their average popularity, and label them as a “Top Star”.
+
+WITH popularity_average_CTE AS (
+    SELECT artist_name,
+    AVG(popularity) AS average_popularity
+    FROM SpotifyData 
+    GROUP BY artist_name
+)
+ 
+SELECT  artist_name,
+        average_popularity,
+        'Top Star' AS tag
+FROM popularity_average_CTE
+WHERE average_popularity>=90;
